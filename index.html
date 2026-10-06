@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Depósitos Bancarios · Arts Nova MutuClub</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,700&display=swap" rel="stylesheet">
+<style>
+:root{--marino:#003366;--inst:#005A9C;--verde:#28A745;--amarillo:#FFC107;--rojo:#DC3545;
+  --fondo:#EEF1F5;--papel:#fff;--linea:#D9DFE7;--tinta:#14243A;--suave:#5E6B7D}
+*{box-sizing:border-box}html,body{margin:0}
+body{font-family:'Source Sans 3',system-ui,sans-serif;background:var(--fondo);color:var(--tinta);font-size:15px;line-height:1.45}
+button,select,input{font:inherit}:focus-visible{outline:2px solid var(--inst);outline-offset:2px}
+.top{background:var(--marino);color:#fff;padding:14px 20px 0}.top-in{max-width:1320px;margin:0 auto}
+.top-row{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px 16px}
+.marca{font-family:'Source Serif 4',Georgia,serif;font-size:21px;font-weight:700}
+.marca span{font-family:'Source Sans 3',sans-serif;font-weight:400;font-size:14px;opacity:.75;margin-left:8px}
+.fecha-datos{font-size:13px;opacity:.85}
+.fecha-datos button{appearance:none;border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;border-radius:6px;padding:2px 9px;margin-left:8px;cursor:pointer;font-size:12.5px}
+nav{display:flex;gap:4px;margin-top:12px;overflow-x:auto;scrollbar-width:none}nav::-webkit-scrollbar{display:none}
+nav button{appearance:none;border:0;background:transparent;color:#C9D6E6;padding:10px 14px 11px;font-size:14.5px;font-weight:600;cursor:pointer;border-radius:8px 8px 0 0;white-space:nowrap;display:flex;align-items:center;gap:7px}
+nav button svg{width:17px;height:17px}nav button:hover{color:#fff;background:rgba(255,255,255,.07)}
+nav button[aria-selected="true"]{background:var(--fondo);color:var(--marino)}
+.wrap{max-width:1320px;margin:0 auto;padding:16px 20px 40px}
+.filtros{background:var(--papel);border:1px solid var(--linea);border-radius:10px;padding:12px 14px;margin-bottom:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;align-items:end}
+.filtros label,.ctl label{display:block;font-size:12px;font-weight:600;color:var(--suave);margin-bottom:3px}
+.filtros select,.filtros input,.ctl input,.ctl select{width:100%;padding:7px 9px;border:1px solid var(--linea);border-radius:7px;background:#fff;font-size:14px;color:var(--tinta)}
+.btn-link{appearance:none;border:0;background:none;color:var(--inst);font-weight:600;cursor:pointer;padding:8px 0;font-size:13.5px;text-align:left}
+section.vista{display:none}section.vista.activa{display:block}
+.sec-tit{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:6px 14px;margin:2px 0 12px}
+.sec-tit h1{font-family:'Source Serif 4',Georgia,serif;font-size:23px;margin:0;color:var(--marino)}
+.sec-tit p{margin:0;font-size:13.5px;color:var(--suave);max-width:72ch}
+.grupo{margin-bottom:18px}.grupo h3{font-size:13px;font-weight:700;color:var(--suave);margin:0 0 8px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.kpi{background:var(--papel);border:1px solid var(--linea);border-radius:10px;padding:12px 14px 12px 16px;position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--inst)}
+.kpi.s-verde::before{background:var(--verde)}.kpi.s-amarillo::before{background:var(--amarillo)}.kpi.s-rojo::before{background:var(--rojo)}
+.kpi-l{font-size:13px;color:var(--suave)}.kpi-v{font-size:24px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi-s{font-size:12.5px;color:var(--suave);margin-top:2px}
+.tend{font-weight:700}.tend.sube{color:#1E7E34}.tend.baja{color:#B02A37}.tend.igual{color:var(--suave)}
+.panel{background:var(--papel);border:1px solid var(--linea);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.panel h2{font-size:16px;margin:0 0 4px;color:var(--marino)}.panel .sub{font-size:13px;color:var(--suave);margin:0 0 12px}
+.dos{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}@media(max-width:900px){.dos{grid-template-columns:1fr}}
+.lienzo{position:relative;height:330px}.lienzo.alto{height:380px}
+.controles{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:12px}
+.seg{display:inline-flex;border:1px solid var(--linea);border-radius:8px;overflow:hidden;background:#fff}
+.seg button{appearance:none;border:0;background:none;padding:7px 13px;font-size:13.5px;font-weight:600;color:var(--suave);cursor:pointer}
+.seg button+button{border-left:1px solid var(--linea)}.seg button[aria-pressed="true"]{background:var(--inst);color:#fff}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th{text-align:left;font-size:12px;font-weight:700;color:var(--suave);padding:7px 8px;border-bottom:2px solid var(--linea);white-space:nowrap}
+table.t td{padding:7px 8px;border-bottom:1px solid #EDF0F4;font-variant-numeric:tabular-nums}
+table.t .n{text-align:right}table.t tfoot td{font-weight:700;border-top:2px solid var(--linea);border-bottom:0}
+table.t tr.clic{cursor:pointer}table.t tr.clic:hover td{background:#F2F6FB}
+.scroll{overflow-x:auto}.cuad{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.btn{appearance:none;border:1px solid var(--inst);background:var(--inst);color:#fff;font-weight:600;padding:7px 14px;border-radius:7px;cursor:pointer;font-size:13.5px}
+.btn.sec{background:#fff;color:var(--inst)}
+.calidad{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px}
+.cal{background:var(--papel);border:1px solid var(--linea);border-radius:10px;padding:12px 14px;cursor:pointer;text-align:left;appearance:none;font:inherit;color:inherit}
+.cal[aria-pressed="true"]{border-color:var(--inst);box-shadow:inset 0 0 0 1px var(--inst)}
+.cal b{display:block;font-size:22px}.cal span{font-size:13px;color:var(--suave)}
+.vacio{padding:24px;text-align:center;color:var(--suave)}
+#carga{position:fixed;inset:0;background:rgba(238,241,245,.97);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px}
+.cbox{background:#fff;border:1px solid var(--linea);border-radius:12px;padding:22px 24px;width:min(440px,100%)}
+.cbox h2{margin:0 0 6px;font-size:17px;color:var(--marino)}.cbox p{font-size:14px;color:var(--suave);margin:6px 0}
+.cbox input{width:100%;padding:9px 10px;border:1px solid var(--linea);border-radius:7px;margin:6px 0 10px}
+.barra{height:8px;background:#E3E8EF;border-radius:999px;overflow:hidden;margin:12px 0 8px}.barra i{display:block;height:100%;width:30%;background:var(--inst);animation:ir 1.1s ease-in-out infinite alternate}
+@keyframes ir{from{margin-left:0}to{margin-left:70%}}
+@media(prefers-reduced-motion:reduce){.barra i{animation:none;width:100%}}
+footer{text-align:center;font-size:12.5px;color:var(--suave);padding:0 20px 24px}
+@media(max-width:600px){.wrap{padding:12px}.top{padding:12px 12px 0}.kpis{grid-template-columns:1fr 1fr}.kpi-v{font-size:20px}.filtros{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div id="carga" role="status" aria-live="polite"><div class="cbox" id="cbox">
+  <h2>Cargando depósitos</h2><div class="barra"><i></i></div><p id="cmsg">Leyendo el Registro desde Google Sheets…</p>
+</div></div>
+
+<header class="top"><div class="top-in">
+  <div class="top-row">
+    <div class="marca">Arts Nova MutuClub<span>Depósitos bancarios</span></div>
+    <div class="fecha-datos"><span id="fechaDatos">—</span><button id="btnRecargar" title="Volver a leer el Sheet">Actualizar</button></div>
+  </div>
+  <nav role="tablist" aria-label="Secciones">
+    <button role="tab" aria-selected="true" data-v="resumen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Resumen</button>
+    <button role="tab" aria-selected="false" data-v="bancos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h18L12 4z"/><path d="M5 10v8M9 10v8M15 10v8M19 10v8M3 20h18"/></svg>Por banco</button>
+    <button role="tab" aria-selected="false" data-v="flujo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/></svg>Flujo</button>
+    <button role="tab" aria-selected="false" data-v="comp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Comportamiento</button>
+    <button role="tab" aria-selected="false" data-v="clientes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c2 .7 3.2 2.6 3.6 5.2"/></svg>Depositantes</button>
+    <button role="tab" aria-selected="false" data-v="buscar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Buscador</button>
+    <button role="tab" aria-selected="false" data-v="calidad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>Calidad de datos</button>
+  </nav>
+</div></header>
+
+<div class="wrap">
+  <div class="filtros">
+    <div><label for="fAnio">Año</label><select id="fAnio"></select></div>
+    <div><label for="fMes">Mes</label><select id="fMes"></select></div>
+    <div><label for="fBanco">Banco</label><select id="fBanco"></select></div>
+    <div><label for="fTipo">Tipo</label><select id="fTipo"></select></div>
+    <div><button class="btn-link" id="btnLimpiar">Quitar filtros</button></div>
+  </div>
+
+  <section class="vista activa" id="v-resumen">
+    <div class="sec-tit"><h1>Resumen</h1><p>Hoy, semana y mes se calculan con la fecha de hoy y respetan los filtros de banco y tipo. Los indicadores del año usan el año elegido.</p></div>
+    <div class="grupo"><h3>Periodo en curso</h3><div class="kpis" id="kpiHoy"></div></div>
+    <div class="grupo"><h3>Año seleccionado</h3><div class="kpis" id="kpiAnio"></div></div>
+    <div class="panel"><h2>Depositado por mes</h2><p class="sub">Año elegido contra el año anterior.</p><div class="lienzo"><canvas id="chMeses"></canvas></div></div>
+  </section>
+
+  <section class="vista" id="v-bancos">
+    <div class="sec-tit"><h1>Por banco</h1><p>Scotiabank, Banorte, Inbursa y BBVA. Los nombres capturados con espacios o minúsculas se agrupan solos.</p></div>
+    <div class="dos">
+      <div class="panel"><h2>Participación</h2><div class="lienzo"><canvas id="chBancoDona"></canvas></div></div>
+      <div class="panel"><h2>Comparativo</h2><div class="scroll"><table class="t" id="tblBancos"></table></div></div>
+    </div>
+    <div class="panel"><h2>Mes a mes por banco</h2><div class="lienzo alto"><canvas id="chBancoMes"></canvas></div></div>
+  </section>
+
+  <section class="vista" id="v-flujo">
+    <div class="sec-tit"><h1>Flujo de depósitos</h1><p>Monto depositado por periodo, separado por banco. Usa los filtros de banco y tipo; el rango de fechas se elige aquí.</p></div>
+    <div class="panel">
+      <div class="controles">
+        <div class="ctl"><label>Agrupar por</label><div class="seg" id="segAgr">
+          <button data-g="dia" aria-pressed="false">Diario</button><button data-g="semana" aria-pressed="true">Semanal</button><button data-g="mes" aria-pressed="false">Mensual</button></div></div>
+        <div class="ctl"><label for="flDesde">Desde</label><input type="date" id="flDesde"></div>
+        <div class="ctl"><label for="flHasta">Hasta</label><input type="date" id="flHasta"></div>
+      </div>
+      <div class="lienzo alto"><canvas id="chFlujo"></canvas></div>
+    </div>
+    <div class="panel"><h2>Detalle por periodo</h2><div class="scroll"><table class="t" id="tblFlujo"></table></div></div>
+  </section>
+
+  <section class="vista" id="v-comp">
+    <div class="sec-tit"><h1>Comportamiento</h1><p>Cómo y cuándo depositan los clientes en el periodo filtrado.</p></div>
+    <div class="dos">
+      <div class="panel"><h2>Transferencia vs depósito</h2><div class="lienzo"><canvas id="chTipo"></canvas></div></div>
+      <div class="panel"><h2>Por día de la semana</h2><div class="lienzo"><canvas id="chDiaSem"></canvas></div></div>
+    </div>
+    <div class="panel"><h2>Por día del mes</h2><p class="sub">Útil para ver si los pagos se concentran en quincenas o fines de mes.</p><div class="lienzo"><canvas id="chDiaMes"></canvas></div></div>
+  </section>
+
+  <section class="vista" id="v-clientes">
+    <div class="sec-tit"><h1>Principales depositantes</h1><p>Clientes y grupos con mayor monto en el periodo filtrado. Un grupo se detecta cuando el nombre empieza con «GRUPO» (por ejemplo, Grupo Agaves).</p></div>
+    <div class="dos">
+      <div class="panel"><h2>Top 20 clientes</h2><div class="scroll"><table class="t" id="tblCli"></table></div></div>
+      <div class="panel"><h2>Grupos</h2><div class="scroll"><table class="t" id="tblGrupos"></table></div></div>
+    </div>
+  </section>
+
+  <section class="vista" id="v-buscar">
+    <div class="sec-tit"><h1>Buscador</h1><p>Busca en todo el registro, sin importar los filtros de arriba.</p></div>
+    <div class="panel">
+      <div class="controles">
+        <div class="ctl" style="flex:1;min-width:240px"><label for="qBuscar">Póliza, cliente o número de depósito</label><input type="search" id="qBuscar" placeholder="Ej. 31668, ANGEL URIEL o 955813" autocomplete="off"></div>
+        <button class="btn sec" id="csvBuscar">Descargar CSV</button>
+      </div>
+      <p class="sub" id="infoBuscar">Escribe al menos 3 caracteres.</p>
+      <div class="scroll"><table class="t" id="tblBuscar"></table></div>
+    </div>
+  </section>
+
+  <section class="vista" id="v-calidad">
+    <div class="sec-tit"><h1>Calidad de datos</h1><p>Revisa todo el registro del año elegido. Da clic en una tarjeta para ver las filas; la columna «Fila» indica dónde corregir en la hoja Registro.</p></div>
+    <div class="calidad" id="calTarjetas"></div>
+    <div class="panel"><div class="controles" style="justify-content:space-between"><h2 id="calTit" style="margin:0">—</h2><button class="btn sec" id="csvCal">Descargar CSV</button></div>
+      <p class="sub" id="calSub"></p><div class="scroll"><table class="t" id="tblCal"></table></div></div>
+  </section>
+</div>
+<footer>Arts Nova MutuClub · Dashboard de depósitos bancarios</footer>
+
+<script>
+/* ═══════════ CONFIGURACIÓN ═══════════ */
+const CONFIG={
+  API_URL:'https://script.google.com/macros/s/AKfycby16aoKzYxsIkwTSmMmvpGp6wyFQjSJHqT1g-ZnUxvGPxfL74kB2HyAyxVOjqrCkOkFDQ/exec',  // termina en /exec
+  bancos:[ // orden y colores fijos para todo el tablero
+    {k:'SCOTIABANK',l:'Scotiabank',c:'#C8102E'},
+    {k:'BANORTE',l:'Banorte',c:'#005A9C'},
+    {k:'INBURSA',l:'Inbursa',c:'#28A745'},
+    {k:'BBVA',l:'BBVA',c:'#F08C00'},
+    {k:'OTRO',l:'Otro / sin banco',c:'#8A94A3'},
+  ],
+  montoAtipico:5000,   // un solo pago mayor a esto se marca para revisión
+};
+const HOY=new Date();HOY.setHours(0,0,0,0);const DIA=864e5;
+
+/* ═══════════ UTILIDADES ═══════════ */
+const $=id=>document.getElementById(id);
+const fmtM=n=>'$'+Math.round(n||0).toLocaleString('es-MX');
+const fmtM2=n=>'$'+(n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtN=n=>Math.round(n||0).toLocaleString('es-MX');
+const fmtP=n=>(isFinite(n)?n:0).toLocaleString('es-MX',{minimumFractionDigits:1,maximumFractionDigits:1})+'%';
+const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const fF=d=>d?`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`:'—';
+const norm=s=>String(s??'').trim().toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MC=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const DIAS=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const BCO=Object.fromEntries(CONFIG.bancos.map(b=>[b.k,b]));
+function bancoDe(t){const u=norm(t);if(u.includes('SCOTIA'))return'SCOTIABANK';if(u.includes('BANORTE'))return'BANORTE';
+  if(u.includes('INBURSA'))return'INBURSA';if(u.includes('BBVA')||u.includes('BANCOMER'))return'BBVA';return'OTRO';}
+function tipoDe(t){const u=norm(t);if(u.includes('TRANSF'))return'Transferencia';if(u.includes('DEPOS'))return'Depósito';return'Sin tipo';}
+function grupoDe(n){const u=norm(n);if(!u.startsWith('GRUPO'))return null;const m=u.match(/^GRUPO\.?\s+([A-Z0-9Ñ]+)/);return m?'GRUPO '+m[1]:'GRUPO';}
+function lunes(d){const x=new Date(d);x.setHours(0,0,0,0);return new Date(x.getTime()-((x.getDay()+6)%7)*DIA);}
+function tend(a,b){if(!b)return a?'<span class="tend sube">nuevo</span>':'<span class="tend igual">—</span>';
+  const d=(a-b)/b*100,c=Math.abs(d)<.5?'igual':d>0?'sube':'baja';return`<span class="tend ${c}">${d>0?'▲':d<0?'▼':'■'} ${fmtP(Math.abs(d))}</span>`;}
+function kpi(l,v,s='',sem=''){return`<div class="kpi ${sem?'s-'+sem:''}"><div class="kpi-l">${l}</div><div class="kpi-v">${v}</div>${s?`<div class="kpi-s">${s}</div>`:''}</div>`;}
+function csv(nombre,cab,filas){
+  const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+  const b=new Blob(['﻿'+[cab.map(q).join(','),...filas.map(f=>f.map(q).join(','))].join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=nombre+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+/* ═══════════ CARGA (Apps Script, JSONP) ═══════════ */
+let D=[];let F=[];let VISTA='resumen';const charts={};
+function claveGuardada(){try{return localStorage.getItem('depositos_clave')||'';}catch(e){return'';}}
+function guardarClave(k){try{localStorage.setItem('depositos_clave',k);}catch(e){}}
+function pedirClave(msg){
+  $('carga').style.display='flex';
+  $('cbox').innerHTML=`<h2>Acceso</h2><p>${msg||'Escribe la clave de acceso del dashboard.'}</p>
+    <input type="password" id="inClave" autocomplete="current-password"><button class="btn" id="btnClave">Entrar</button>`;
+  const go=()=>{const k=$('inClave').value.trim();if(!k)return;guardarClave(k);cargar();};
+  $('btnClave').onclick=go;$('inClave').onkeydown=e=>{if(e.key==='Enter')go();};$('inClave').focus();
+}
+function cargar(){
+  const k=claveGuardada();if(!k)return pedirClave();
+  $('carga').style.display='flex';
+  $('cbox').innerHTML='<h2>Cargando depósitos</h2><div class="barra"><i></i></div><p>Leyendo el Registro desde Google Sheets…</p>';
+  const cb='cbDep'+Date.now();const s=document.createElement('script');
+  const t=setTimeout(()=>{fallo('El Sheet no respondió. Revisa la URL del Apps Script en CONFIG o tu conexión.');},45000);
+  window[cb]=res=>{clearTimeout(t);delete window[cb];s.remove();
+    if(res.error){if(/clave/i.test(res.error)){guardarClave('');return pedirClave('La clave no es correcta. Intenta de nuevo.');}return fallo(res.error);}
+    recibir(res);};
+  s.onerror=()=>{clearTimeout(t);fallo('No se pudo conectar con el Apps Script. Revisa que la URL en CONFIG termine en /exec y que esté publicado para «Cualquier usuario».');};
+  s.src=`${CONFIG.API_URL}?k=${encodeURIComponent(k)}&callback=${cb}`;document.body.appendChild(s);
+}
+function fallo(m){$('cbox').innerHTML=`<h2>No se pudieron cargar los datos</h2><p>${esc(m)}</p><button class="btn" onclick="cargar()">Reintentar</button>`;}
+$('btnRecargar').onclick=cargar;
+
+function recibir(res){
+  D=res.filas.map(r=>{
+    const [y,m,d]=r[0].split('-').map(Number);const f=new Date(y,m-1,d);
+    return{f,y,m:m-1,monto:+r[1]||0,dep:r[2],veces:r[3],tipoT:r[4],bancoT:r[5],banco:bancoDe(r[5]),tipo:tipoDe(r[4]),
+      pol:r[6],cli:r[7],npago:r[8],fact:r[9],ffact:r[10],notas:r[11],fila:r[12],grupo:grupoDe(r[7]),
+      busca:norm([r[6],r[7],r[2]].join(' '))};
+  });
+  const ult=D.reduce((a,x)=>x.f>a?x.f:a,new Date(0));
+  $('fechaDatos').textContent=`Hoy ${fF(HOY)} · Último depósito capturado ${fF(ult)} · ${fmtN(D.length)} registros`;
+  armarFiltros();aplicar();$('carga').style.display='none';
+}
+
+/* ═══════════ FILTROS ═══════════ */
+function armarFiltros(){
+  const anios=[...new Set(D.map(x=>x.y))].sort((a,b)=>b-a);
+  const prev=$('fAnio').value;
+  $('fAnio').innerHTML='<option value="">Todos</option>'+anios.map(a=>`<option>${a}</option>`).join('');
+  $('fAnio').value=prev||(anios.includes(HOY.getFullYear())?String(HOY.getFullYear()):'');
+  if(!$('fMes').options.length)$('fMes').innerHTML='<option value="">Todos</option>'+MESES.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+  if(!$('fBanco').options.length)$('fBanco').innerHTML='<option value="">Todos</option>'+CONFIG.bancos.map(b=>`<option value="${b.k}">${b.l}</option>`).join('');
+  if(!$('fTipo').options.length)$('fTipo').innerHTML='<option value="">Todos</option><option>Transferencia</option><option>Depósito</option><option>Sin tipo</option>';
+}
+const okBT=x=>(!$('fBanco').value||x.banco===$('fBanco').value)&&(!$('fTipo').value||x.tipo===$('fTipo').value);
+function aplicar(){
+  const a=$('fAnio').value,m=$('fMes').value;
+  F=D.filter(x=>okBT(x)&&(!a||x.y===+a)&&(m===''||x.m===+m));
+  pintar();
+}
+['fAnio','fMes','fBanco','fTipo'].forEach(id=>$(id).addEventListener('change',aplicar));
+$('btnLimpiar').onclick=()=>{$('fMes').value='';$('fBanco').value='';$('fTipo').value='';$('fAnio').value=String(HOY.getFullYear());aplicar();};
+
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',String(x===b)));
+  VISTA=b.dataset.v;document.querySelectorAll('section.vista').forEach(s=>s.classList.toggle('activa',s.id==='v-'+VISTA));pintar();
+}));
+function pintar(){if(!D.length)return;({resumen:pResumen,bancos:pBancos,flujo:pFlujo,comp:pComp,clientes:pClientes,buscar:pBuscar,calidad:pCalidad})[VISTA]();}
+
+/* ═══════════ GRÁFICAS ═══════════ */
+Chart.defaults.font.family="'Source Sans 3',system-ui,sans-serif";Chart.defaults.font.size=13;Chart.defaults.color='#5E6B7D';
+const ejeM=v=>{const a=Math.abs(v);return'$'+(a>=1e6?(v/1e6).toFixed(1)+' M':a>=1e3?Math.round(v/1e3)+' mil':v);};
+function g(id,cfg){if(charts[id])charts[id].destroy();charts[id]=new Chart($(id),cfg);}
+const leyenda={position:'bottom',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:8,boxHeight:8,padding:14}};
+const tipM={callbacks:{label:c=>` ${c.dataset.label||c.label}: ${fmtM2(c.parsed.y??c.parsed)}`}};
+const suma=(arr)=>arr.reduce((a,x)=>a+x.monto,0);
+const ops=(arr)=>new Set(arr.map(x=>x.banco+'|'+x.dep+'|'+iso(x.f))).size;
+
+/* ═══════════ 1. RESUMEN ═══════════ */
+function pResumen(){
+  const base=D.filter(okBT);
+  const rng=(a,b)=>base.filter(x=>x.f>=a&&x.f<=b);
+  const ayer=new Date(HOY.getTime()-DIA);
+  const lun=lunes(HOY),lunAnt=new Date(lun.getTime()-7*DIA),hoyAnt=new Date(HOY.getTime()-7*DIA);
+  const iniM=new Date(HOY.getFullYear(),HOY.getMonth(),1),iniMA=new Date(HOY.getFullYear(),HOY.getMonth()-1,1);
+  const ultMA=new Date(HOY.getFullYear(),HOY.getMonth(),0).getDate();
+  const finMA=new Date(iniMA.getFullYear(),iniMA.getMonth(),Math.min(HOY.getDate(),ultMA));
+  const H=rng(HOY,HOY),A=rng(ayer,ayer),S=rng(lun,HOY),SA=rng(lunAnt,hoyAnt),M=rng(iniM,HOY),MA=rng(iniMA,finMA);
+  $('kpiHoy').innerHTML=[
+    kpi('Depositado hoy',fmtM(suma(H)),`${fmtN(H.length)} pagos · ayer ${fmtM(suma(A))}`),
+    kpi('Semana en curso',fmtM(suma(S)),`${tend(suma(S),suma(SA))} vs mismos días de la semana pasada`),
+    kpi(`${MESES[HOY.getMonth()]} a la fecha`,fmtM(suma(M)),`${tend(suma(M),suma(MA))} vs 1–${finMA.getDate()} de ${MESES[iniMA.getMonth()].toLowerCase()}`,suma(M)>=suma(MA)?'verde':suma(M)>=suma(MA)*.9?'amarillo':'rojo'),
+    kpi('Pagos del mes',fmtN(M.length),`${fmtN(ops(M))} operaciones bancarias`),
+  ].join('');
+  const y=+$('fAnio').value||HOY.getFullYear();
+  const Y=base.filter(x=>x.y===y);
+  const esActual=y===HOY.getFullYear();
+  const corte=esActual?new Date(y-1,HOY.getMonth(),HOY.getDate()):new Date(y-1,11,31);
+  const YA=base.filter(x=>x.y===y-1&&x.f<=corte);
+  const prom=Y.length?suma(Y)/Y.length:0;
+  const mesesCon=new Set(Y.map(x=>x.m)).size||1;
+  $('kpiAnio').innerHTML=[
+    kpi(`Depositado ${y}`,fmtM(suma(Y)),`${tend(suma(Y),suma(YA))} vs ${y-1}${esActual?' a la misma fecha':''}`),
+    kpi('Pagos registrados',fmtN(Y.length),`${fmtN(ops(Y))} operaciones bancarias`),
+    kpi('Monto promedio por pago',fmtM2(prom)),
+    kpi('Promedio mensual',fmtM(suma(Y)/mesesCon),`${mesesCon} mes(es) con depósitos`),
+  ].join('');
+  const porMes=(yy)=>MESES.map((_,i)=>suma(base.filter(x=>x.y===yy&&x.m===i)));
+  g('chMeses',{type:'bar',data:{labels:MC,datasets:[
+    {label:String(y-1),data:porMes(y-1),backgroundColor:'#B9C6D6',borderRadius:3},
+    {label:String(y),data:porMes(y),backgroundColor:'#005A9C',borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:leyenda,tooltip:tipM},
+      scales:{y:{beginAtZero:true,ticks:{callback:ejeM},grid:{color:'#EDF0F4'}},x:{grid:{display:false}}}}});
+}
+
+/* ═══════════ 2. POR BANCO ═══════════ */
+function pBancos(){
+  const y=+$('fAnio').value||null;
+  const corte=y===HOY.getFullYear()?new Date(y-1,HOY.getMonth(),HOY.getDate()):new Date(y-1,11,31);
+  const ant=y?D.filter(x=>x.y===y-1&&x.f<=corte&&(!$('fMes').value||x.m===+$('fMes').value)&&okBT(x)):[];
+  const filas=CONFIG.bancos.map(b=>{const l=F.filter(x=>x.banco===b.k),la=ant.filter(x=>x.banco===b.k);
+    return{...b,n:l.length,ops:ops(l),monto:suma(l),ant:suma(la)};}).filter(f=>f.n||f.ant);
+  const tot=filas.reduce((a,f)=>a+f.monto,0);
+  g('chBancoDona',{type:'doughnut',data:{labels:filas.map(f=>f.l),datasets:[{data:filas.map(f=>f.monto),backgroundColor:filas.map(f=>f.c),borderColor:'#fff',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:leyenda,
+      tooltip:{callbacks:{label:c=>` ${c.label}: ${fmtM2(c.parsed)} (${fmtP(tot?c.parsed/tot*100:0)})`}}}}});
+  $('tblBancos').innerHTML=`<thead><tr><th>Banco</th><th class="n">Pagos</th><th class="n">Operaciones</th><th class="n">Monto</th><th class="n">%</th>${y?`<th class="n">vs ${y-1}${y===HOY.getFullYear()?' a la fecha':''}</th>`:''}</tr></thead>
+    <tbody>${filas.map(f=>`<tr><td><span class="cuad" style="background:${f.c}"></span>${f.l}</td><td class="n">${fmtN(f.n)}</td><td class="n">${fmtN(f.ops)}</td>
+      <td class="n">${fmtM2(f.monto)}</td><td class="n">${fmtP(tot?f.monto/tot*100:0)}</td>${y?`<td class="n">${tend(f.monto,f.ant)}</td>`:''}</tr>`).join('')}</tbody>
+    <tfoot><tr><td>Total</td><td class="n">${fmtN(F.length)}</td><td class="n">${fmtN(ops(F))}</td><td class="n">${fmtM2(tot)}</td><td class="n">100%</td>${y?`<td class="n">${tend(tot,suma(ant))}</td>`:''}</tr></tfoot>`;
+  const meses=[...new Set(F.map(x=>x.y*12+x.m))].sort((a,b)=>a-b);
+  g('chBancoMes',{type:'bar',data:{labels:meses.map(k=>`${MC[k%12]} ${Math.floor(k/12)}`),
+    datasets:filas.map(b=>({label:b.l,backgroundColor:b.c,data:meses.map(k=>suma(F.filter(x=>x.banco===b.k&&x.y*12+x.m===k)))}))},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:leyenda,tooltip:{...tipM,callbacks:{...tipM.callbacks,footer:it=>'Total: '+fmtM2(it.reduce((a,i)=>a+i.parsed.y,0))}}},
+      scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,beginAtZero:true,ticks:{callback:ejeM},grid:{color:'#EDF0F4'}}}}});
+}
+
+/* ═══════════ 3. FLUJO ═══════════ */
+let AGR='semana';
+function rangoDef(gr){if(gr==='dia')return[new Date(HOY.getTime()-29*DIA),HOY];if(gr==='semana')return[new Date(lunes(HOY).getTime()-15*7*DIA),HOY];return[new Date(HOY.getFullYear(),HOY.getMonth()-11,1),HOY];}
+function fijar(){const[a,b]=rangoDef(AGR);$('flDesde').value=iso(a);$('flHasta').value=iso(b);}
+const clave=(d,gr)=>gr==='dia'?iso(d):gr==='semana'?iso(lunes(d)):iso(d).slice(0,7);
+function etq(k,gr){const[y,m,d]=k.split('-').map(Number);return gr==='mes'?`${MC[m-1]} ${y}`:gr==='semana'?`sem. ${d} ${MC[m-1]}`:`${d} ${MC[m-1]}`;}
+document.querySelectorAll('#segAgr button').forEach(b=>b.onclick=()=>{AGR=b.dataset.g;
+  document.querySelectorAll('#segAgr button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));fijar();pFlujo();});
+['flDesde','flHasta'].forEach(id=>$(id).addEventListener('change',pFlujo));
+function pFlujo(){
+  if(!$('flDesde').value)fijar();
+  const a=new Date($('flDesde').value+'T00:00:00'),b=new Date($('flHasta').value+'T00:00:00');
+  if(isNaN(a)||isNaN(b)||a>b){fijar();return pFlujo();}
+  const ks=[],vis=new Set();for(let d=new Date(a);d<=b;d=new Date(d.getTime()+DIA)){const k=clave(d,AGR);if(!vis.has(k)){vis.add(k);ks.push(k);}}
+  if(ks.length>400){$('tblFlujo').innerHTML='<tr><td class="vacio">Rango muy amplio para diario. Elige semanal o mensual.</td></tr>';return;}
+  const L=D.filter(x=>okBT(x)&&x.f>=a&&x.f<=b);
+  const B={};ks.forEach(k=>B[k]={t:0,n:0,b:{}});
+  L.forEach(x=>{const o=B[clave(x.f,AGR)];if(!o)return;o.t+=x.monto;o.n++;o.b[x.banco]=(o.b[x.banco]||0)+x.monto;});
+  const bancos=CONFIG.bancos.filter(bk=>L.some(x=>x.banco===bk.k));
+  g('chFlujo',{type:'bar',data:{labels:ks.map(k=>etq(k,AGR)),datasets:bancos.map(bk=>({label:bk.l,backgroundColor:bk.c,data:ks.map(k=>B[k].b[bk.k]||0)}))},
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:leyenda,tooltip:{...tipM,callbacks:{...tipM.callbacks,footer:it=>'Total: '+fmtM2(it.reduce((s,i)=>s+i.parsed.y,0))}}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{maxRotation:0,autoSkip:true}},y:{stacked:true,beginAtZero:true,ticks:{callback:ejeM},grid:{color:'#EDF0F4'}}}}});
+  const filas=ks.slice().reverse();
+  const tot=filas.reduce((s,k)=>s+B[k].t,0);
+  $('tblFlujo').innerHTML=`<thead><tr><th>Periodo</th>${bancos.map(bk=>`<th class="n">${bk.l}</th>`).join('')}<th class="n">Pagos</th><th class="n">Total</th><th class="n">vs anterior</th></tr></thead>
+    <tbody>${filas.map((k,i)=>{const prev=filas[i+1];return`<tr><td>${etq(k,AGR)}${k===clave(HOY,AGR)?' <span style="color:var(--suave);font-size:12px">(en curso)</span>':''}</td>
+      ${bancos.map(bk=>`<td class="n">${fmtM(B[k].b[bk.k]||0)}</td>`).join('')}<td class="n">${fmtN(B[k].n)}</td><td class="n"><b>${fmtM(B[k].t)}</b></td>
+      <td class="n">${prev?tend(B[k].t,B[prev].t):'—'}</td></tr>`;}).join('')}</tbody>
+    <tfoot><tr><td>Total</td>${bancos.map(bk=>`<td class="n">${fmtM(filas.reduce((s,k)=>s+(B[k].b[bk.k]||0),0))}</td>`).join('')}<td class="n">${fmtN(L.length)}</td><td class="n">${fmtM(tot)}</td><td></td></tr></tfoot>`;
+}
+
+/* ═══════════ 4. COMPORTAMIENTO ═══════════ */
+function pComp(){
+  const tipos=['Transferencia','Depósito','Sin tipo'].map((t,i)=>({t,c:['#005A9C','#28A745','#C5CCD6'][i],l:F.filter(x=>x.tipo===t)})).filter(o=>o.l.length);
+  const tt=suma(F);
+  g('chTipo',{type:'doughnut',data:{labels:tipos.map(o=>o.t),datasets:[{data:tipos.map(o=>suma(o.l)),backgroundColor:tipos.map(o=>o.c),borderColor:'#fff',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:leyenda,
+      tooltip:{callbacks:{label:c=>{const o=tipos[c.dataIndex];return[` ${o.t}: ${fmtM2(c.parsed)} (${fmtP(tt?c.parsed/tt*100:0)})`,` ${fmtN(o.l.length)} pagos`];}}}}}});
+  const ds=DIAS.map((_,i)=>F.filter(x=>(x.f.getDay()+6)%7===i));
+  g('chDiaSem',{type:'bar',data:{labels:DIAS,datasets:[{label:'Monto',data:ds.map(suma),backgroundColor:'#005A9C',borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>[` ${fmtM2(c.parsed.y)}`,` ${fmtN(ds[c.dataIndex].length)} pagos`]}}},
+      scales:{y:{beginAtZero:true,ticks:{callback:ejeM},grid:{color:'#EDF0F4'}},x:{grid:{display:false}}}}});
+  const dm=Array.from({length:31},(_,i)=>F.filter(x=>x.f.getDate()===i+1));
+  g('chDiaMes',{type:'bar',data:{labels:dm.map((_,i)=>i+1),datasets:[{label:'Monto',data:dm.map(suma),backgroundColor:dm.map((_,i)=>[14,15,29,30,31].includes(i+1)?'#F08C00':'#005A9C'),borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{title:it=>'Día '+it[0].label,label:c=>[` ${fmtM2(c.parsed.y)}`,` ${fmtN(dm[c.dataIndex].length)} pagos`]}}},
+      scales:{y:{beginAtZero:true,ticks:{callback:ejeM},grid:{color:'#EDF0F4'}},x:{grid:{display:false}}}}});
+}
+
+/* ═══════════ 5. DEPOSITANTES ═══════════ */
+function pClientes(){
+  const agrupar=(clave)=>{const m=new Map();F.forEach(x=>{const k=clave(x);if(!k)return;const o=m.get(k)||{k,monto:0,n:0,pol:new Set(),ult:null,b:{}};
+    o.monto+=x.monto;o.n++;o.pol.add(x.pol);if(!o.ult||x.f>o.ult)o.ult=x.f;o.b[x.banco]=(o.b[x.banco]||0)+x.monto;m.set(k,o);});return[...m.values()].sort((a,b)=>b.monto-a.monto);};
+  const tot=suma(F);
+  const cli=agrupar(x=>norm(x.cli)||null).slice(0,20);
+  const top=(o)=>{const k=Object.entries(o.b).sort((a,b)=>b[1]-a[1])[0];return k?BCO[k[0]].l:'—';};
+  $('tblCli').innerHTML=cli.length?`<thead><tr><th>#</th><th>Cliente</th><th class="n">Pólizas</th><th class="n">Pagos</th><th class="n">Monto</th><th class="n">% del total</th><th>Último</th><th>Banco principal</th></tr></thead>
+    <tbody>${cli.map((o,i)=>`<tr class="clic" data-q="${esc(o.k)}"><td>${i+1}</td><td>${esc(o.k)}</td><td class="n">${o.pol.size}</td><td class="n">${fmtN(o.n)}</td><td class="n">${fmtM(o.monto)}</td>
+      <td class="n">${fmtP(tot?o.monto/tot*100:0)}</td><td>${fF(o.ult)}</td><td>${top(o)}</td></tr>`).join('')}</tbody>`:'<tr><td class="vacio">Sin depósitos con estos filtros.</td></tr>';
+  const gr=agrupar(x=>x.grupo);
+  $('tblGrupos').innerHTML=gr.length?`<thead><tr><th>Grupo</th><th class="n">Pólizas</th><th class="n">Pagos</th><th class="n">Monto</th><th class="n">% del total</th><th>Último</th></tr></thead>
+    <tbody>${gr.map(o=>`<tr class="clic" data-q="${esc(o.k)}"><td>${esc(o.k)}</td><td class="n">${o.pol.size}</td><td class="n">${fmtN(o.n)}</td><td class="n">${fmtM(o.monto)}</td><td class="n">${fmtP(tot?o.monto/tot*100:0)}</td><td>${fF(o.ult)}</td></tr>`).join('')}</tbody>`
+    :'<tr><td class="vacio">No hay grupos en el periodo.</td></tr>';
+  document.querySelectorAll('#tblCli tr.clic,#tblGrupos tr.clic').forEach(tr=>tr.onclick=()=>{
+    $('qBuscar').value=tr.dataset.q;document.querySelector('nav button[data-v=buscar]').click();});
+}
+
+/* ═══════════ 6. BUSCADOR ═══════════ */
+let RES=[];
+const colsReg=['Fecha','Banco','Tipo','N° depósito','Póliza','Cliente','N° pago','Monto','Fila'];
+const filaReg=x=>`<tr><td>${fF(x.f)}</td><td><span class="cuad" style="background:${BCO[x.banco].c}"></span>${esc(x.bancoT||'—')}</td><td>${esc(x.tipoT||'—')}</td>
+  <td>${esc(x.dep)}</td><td><b>${esc(x.pol)}</b></td><td>${esc(x.cli)}</td><td class="n">${esc(x.npago)}</td><td class="n">${fmtM2(x.monto)}</td><td class="n">${x.fila}</td></tr>`;
+const csvReg=x=>[fF(x.f),x.bancoT,x.tipoT,x.dep,x.pol,x.cli,x.npago,x.monto.toFixed(2),x.fila];
+let tB;$('qBuscar').addEventListener('input',()=>{clearTimeout(tB);tB=setTimeout(pBuscar,200);});
+function pBuscar(){
+  const q=norm($('qBuscar').value);
+  if(q.length<3){RES=[];$('infoBuscar').textContent='Escribe al menos 3 caracteres.';$('tblBuscar').innerHTML='';return;}
+  RES=D.filter(x=>x.busca.includes(q)).sort((a,b)=>b.f-a.f);
+  $('infoBuscar').textContent=`${fmtN(RES.length)} registro(s) · ${fmtM2(suma(RES))}${RES.length>300?' · se muestran los 300 más recientes; el CSV trae todos':''}`;
+  $('tblBuscar').innerHTML=RES.length?`<thead><tr>${colsReg.map((c,i)=>`<th${[6,7,8].includes(i)?' class="n"':''}>${c}</th>`).join('')}</tr></thead><tbody>${RES.slice(0,300).map(filaReg).join('')}</tbody>`:'<tr><td class="vacio">Sin coincidencias.</td></tr>';
+}
+$('csvBuscar').onclick=()=>{if(RES.length)csv('Busqueda_depositos',colsReg,RES.map(csvReg));};
+
+/* ═══════════ 7. CALIDAD ═══════════ */
+let CAL=null,CALSEL=0;
+function pCalidad(){
+  const y=$('fAnio').value;const base=D.filter(x=>!y||x.y===+y);
+  const dupKey=x=>[iso(x.f),x.banco,x.dep,norm(x.pol),x.monto].join('|');
+  const cnt=new Map();base.forEach(x=>{const k=dupKey(x);cnt.set(k,(cnt.get(k)||0)+1);});
+  CAL=[
+    {t:'Sin póliza',d:'Filas con monto pero sin número de póliza.',l:base.filter(x=>!x.pol)},
+    {t:'Banco no reconocido',d:'El banco no coincide con Scotiabank, Banorte, Inbursa ni BBVA.',l:base.filter(x=>x.banco==='OTRO')},
+    {t:'Banco con espacios o variantes',d:'Se agrupan bien aquí, pero conviene corregirlos en la hoja (por ejemplo «BANORTE »).',l:base.filter(x=>x.banco!=='OTRO'&&x.bancoT!==x.banco)},
+    {t:'Sin tipo',d:'No dice si fue transferencia o depósito.',l:base.filter(x=>x.tipo==='Sin tipo')},
+    {t:'Posibles duplicados',d:'Misma fecha, banco, número de depósito, póliza y monto más de una vez.',l:base.filter(x=>cnt.get(dupKey(x))>1).sort((a,b)=>dupKey(a).localeCompare(dupKey(b)))},
+    {t:'N° de depósito dañado',d:'Se guardó en notación científica (por ejemplo 1.1022E+24) y ya perdió dígitos. Captura esa columna como texto.',l:base.filter(x=>/E\+/i.test(x.dep))},
+    {t:'Montos para revisar',d:`Pagos en cero, negativos o mayores a ${fmtM(CONFIG.montoAtipico)}.`,l:base.filter(x=>x.monto<=0||x.monto>CONFIG.montoAtipico)},
+  ];
+  $('calTarjetas').innerHTML=CAL.map((c,i)=>`<button class="cal" aria-pressed="${i===CALSEL}" data-i="${i}"><b style="color:${c.l.length?'#B02A37':'#1E7E34'}">${fmtN(c.l.length)}</b><span>${c.t}</span></button>`).join('');
+  document.querySelectorAll('.cal').forEach(b=>b.onclick=()=>{CALSEL=+b.dataset.i;pCalidad();});
+  const c=CAL[CALSEL];
+  $('calTit').textContent=`${c.t} (${fmtN(c.l.length)})`;$('calSub').textContent=c.d+(c.l.length>300?' Se muestran 300; el CSV trae todas.':'');
+  $('tblCal').innerHTML=c.l.length?`<thead><tr>${colsReg.map((h,i)=>`<th${[6,7,8].includes(i)?' class="n"':''}>${h}</th>`).join('')}</tr></thead><tbody>${c.l.slice(0,300).map(filaReg).join('')}</tbody>`:'<tr><td class="vacio">Nada que corregir aquí.</td></tr>';
+}
+$('csvCal').onclick=()=>{if(CAL&&CAL[CALSEL].l.length)csv('Calidad_'+CAL[CALSEL].t.replace(/\W+/g,'_'),colsReg,CAL[CALSEL].l.map(csvReg));};
+
+cargar();
+</script>
+</body>
+</html>
